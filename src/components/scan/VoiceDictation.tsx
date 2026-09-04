@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Sparkles, Loader2, AlertCircle, Send } from 'lucide-react';
+import { Mic, MicOff, Sparkles, Loader2, AlertCircle, Send, RotateCcw } from 'lucide-react';
 
 interface VoiceDictationProps {
   householdId: string;
@@ -32,11 +32,61 @@ export function VoiceDictation({ householdId, onExtractionComplete }: VoiceDicta
     recognition.lang = 'es-ES';
 
     recognition.onresult = (event: any) => {
-      let current = '';
+      let combined = '';
+
       for (let i = 0; i < event.results.length; i++) {
-        current += event.results[i][0].transcript + ' ';
+        const text = event.results[i][0]?.transcript?.trim() || '';
+        if (!text) continue;
+
+        if (!combined) {
+          combined = text;
+        } else {
+          const lowerCombined = combined.toLowerCase();
+          const lowerText = text.toLowerCase();
+
+          // Caso 1: En Android Chrome, el reconocedor de Google suele emitir la frase completa acumulada
+          if (lowerText.startsWith(lowerCombined)) {
+            combined = text;
+          }
+          // Caso 2: El texto anterior ya contiene este segmento (interim redundante)
+          else if (lowerCombined.includes(lowerText)) {
+            // Ya está contenido, ignorar
+          }
+          // Caso 3: Solapamiento parcial entre fragmentos consecutivos
+          else {
+            const combinedWords = combined.split(/\s+/);
+            const textWords = text.split(/\s+/);
+
+            let overlap = 0;
+            const maxCheck = Math.min(combinedWords.length, textWords.length);
+            for (let len = maxCheck; len > 0; len--) {
+              const suffix = combinedWords.slice(-len).join(' ').toLowerCase();
+              const prefix = textWords.slice(0, len).join(' ').toLowerCase();
+              if (suffix === prefix) {
+                overlap = len;
+                break;
+              }
+            }
+
+            if (overlap > 0) {
+              combined = combinedWords.join(' ') + ' ' + textWords.slice(overlap).join(' ');
+            } else {
+              combined += ' ' + text;
+            }
+          }
+        }
       }
-      setTranscript(current.trim());
+
+      // Eliminar duplicaciones inmediatas de palabras (ej: "jamón jamón" -> "jamón")
+      const words = combined.trim().split(/\s+/);
+      const deduped: string[] = [];
+      for (let i = 0; i < words.length; i++) {
+        if (i === 0 || words[i].toLowerCase() !== words[i - 1].toLowerCase()) {
+          deduped.push(words[i]);
+        }
+      }
+
+      setTranscript(deduped.join(' '));
     };
 
     recognition.onerror = (event: any) => {
@@ -146,12 +196,24 @@ export function VoiceDictation({ householdId, onExtractionComplete }: VoiceDicta
 
       {/* Editable Transcription Textarea */}
       <div>
-        <label
-          htmlFor="dictation-text"
-          className="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1.5"
-        >
-          Texto Reconocido o Escrito
-        </label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label
+            htmlFor="dictation-text"
+            className="block text-xs font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300"
+          >
+            Texto Reconocido o Escrito
+          </label>
+          {transcript && (
+            <button
+              type="button"
+              onClick={() => setTranscript('')}
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-400 hover:text-red-500 transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Limpiar
+            </button>
+          )}
+        </div>
         <textarea
           id="dictation-text"
           rows={3}
