@@ -1,5 +1,5 @@
 import { Type } from '@google/genai';
-import { getGeminiClient, GEMINI_MODEL } from './client';
+import { getGeminiClient, GEMINI_MODEL, generateWithFallback } from './client';
 import { RescueRecipe, RescueRecipesResponse } from '@/types/ai';
 
 export const rescueRecipeJsonSchema = {
@@ -189,8 +189,7 @@ export async function generateRescueRecipesWithGemini(options: {
     (options.dietaryPreferences ? `Preferencias dietéticas: ${options.dietaryPreferences}.\n` : '') +
     'Por favor genera entre 1 y 3 recetas de rescate anti-desperdicio con salida estructurada JSON.';
 
-  const response = await ai.models.generateContent({
-    model: GEMINI_MODEL,
+  const response = await generateWithFallback({
     contents: [{ text: userPrompt }],
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,

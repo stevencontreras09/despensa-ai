@@ -1,5 +1,5 @@
 import { Type } from '@google/genai';
-import { getGeminiClient, GEMINI_MODEL } from './client';
+import { getGeminiClient, GEMINI_MODEL, generateWithFallback } from './client';
 import { TicketExtractionResponse } from '@/types/ai';
 
 export const ticketExtractionJsonSchema = {
@@ -181,8 +181,7 @@ export async function parseTicketWithGemini(options: {
     });
   }
 
-  const response = await ai.models.generateContent({
-    model: GEMINI_MODEL,
+  const response = await generateWithFallback({
     contents,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,

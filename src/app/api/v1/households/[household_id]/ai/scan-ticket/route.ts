@@ -108,8 +108,26 @@ export async function POST(
     });
   } catch (err: any) {
     console.error('Error procesando ticket con Gemini:', err);
+    let errorMessage = err.message || 'Error al procesar la compra con IA';
+    try {
+      const parsed = JSON.parse(errorMessage);
+      if (parsed?.error?.message) {
+        errorMessage = parsed.error.message;
+      }
+    } catch {
+      // no es JSON
+    }
+
+    if (
+      errorMessage.includes('503') ||
+      errorMessage.includes('high demand') ||
+      errorMessage.includes('UNAVAILABLE')
+    ) {
+      errorMessage = 'Los servidores de Gemini están con alta demanda temporal. Por favor presiona "Procesar" nuevamente en unos segundos.';
+    }
+
     return NextResponse.json(
-      { error: err.message || 'Error al procesar el ticket con IA' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

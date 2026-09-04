@@ -100,8 +100,26 @@ export async function POST(
     });
   } catch (err: any) {
     console.error('Error generando recetas de rescate:', err);
+    let errorMessage = err.message || 'Error en el servidor al formular recetas';
+    try {
+      const parsed = JSON.parse(errorMessage);
+      if (parsed?.error?.message) {
+        errorMessage = parsed.error.message;
+      }
+    } catch {
+      // no es JSON
+    }
+
+    if (
+      errorMessage.includes('503') ||
+      errorMessage.includes('high demand') ||
+      errorMessage.includes('UNAVAILABLE')
+    ) {
+      errorMessage = 'Los servidores de Gemini están con alta demanda temporal. Por favor reintenta generar las recetas en unos segundos.';
+    }
+
     return NextResponse.json(
-      { error: err.message || 'Error en el servidor al formular recetas' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
