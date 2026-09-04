@@ -117,7 +117,7 @@ export async function POST(
       success: true,
       store_name: extractionResult.store_name,
       purchase_date: baseDateStr,
-      currency: extractionResult.currency || 'EUR',
+      currency: extractionResult.currency || 'DOP',
       items: enrichedItems,
     });
   } catch (err: any) {

@@ -365,13 +365,13 @@ export function InventoryContainer({
 
               <div>
                 <label className="block font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                  Costo estimado (€, opcional)
+                  Costo estimado (RD$, opcional)
                 </label>
                 <input
                   type="number"
                   step="0.01"
                   min="0"
-                  placeholder="Ej: 2.50"
+                  placeholder="Ej: 150.00"
                   value={newItemCost}
                   onChange={(e) => setNewItemCost(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"

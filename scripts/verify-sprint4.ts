@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { formatCurrency } from '../src/lib/utils/currency';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -55,12 +56,19 @@ async function runSprint4Verification() {
   const totalActions = consumedCount + wastedCount;
   const rescueRate = Math.round((consumedCount / totalActions) * 100);
 
-  assert(totalSaved === 12.60, `Dinero ahorrado calculado correctamente: ${totalSaved}€`);
-  assert(totalWasted === 1.80, `Dinero desperdiciado calculado correctamente: ${totalWasted}€`);
+  assert(totalSaved === 12.60, `Dinero ahorrado calculado correctamente: ${formatCurrency(totalSaved)}`);
+  assert(totalWasted === 1.80, `Dinero desperdiciado calculado correctamente: ${formatCurrency(totalWasted)}`);
   assert(rescueRate === 75, `Tasa de aprovechamiento anti-desperdicio calculada: ${rescueRate}%`);
 
-  // 3. Test de Reabastecimiento Automático
-  console.log('\n3. Test de Reabastecimiento en Lista de Compras:');
+  // Test de Moneda Dominicana (RD$ / DOP)
+  console.log('\n3. Test de Moneda Dominicana (RD$ / DOP):');
+  assert(formatCurrency(150.50) === 'RD$ 150.50', `Formatea 150.50 a RD$ 150.50: ${formatCurrency(150.50)}`);
+  assert(formatCurrency(12500) === 'RD$ 12,500.00', `Formatea miles con coma: ${formatCurrency(12500)}`);
+  assert(formatCurrency(null) === '—', 'Maneja valores nulos con guion');
+  assert(formatCurrency(-25) === '-RD$ 25.00', 'Maneja valores negativos');
+
+  // 4. Test de Reabastecimiento Automático
+  console.log('\n4. Test de Reabastecimiento en Lista de Compras:');
   const depletedItem = {
     name: 'Leche Entera 1L',
     quantity: 1,

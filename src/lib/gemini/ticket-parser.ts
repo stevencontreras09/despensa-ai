@@ -15,7 +15,7 @@ export const ticketExtractionJsonSchema = {
     },
     currency: {
       type: Type.STRING,
-      description: 'Símbolo o código de moneda (ej: EUR, USD).',
+      description: 'Símbolo o código de moneda (ej: DOP, RD$, USD). Por defecto DOP si es de República Dominicana o no se especifica.',
     },
     items: {
       type: Type.ARRAY,
@@ -85,9 +85,10 @@ Tu misión es procesar imágenes de tickets de compra de supermercados o transcr
    - Lácteos y huevos: 7-10 días
    - Panadería fresca: 3-4 días
    - Conservas y despensa seca (arroz, pasta, legumbres): 180 días
-   - Congelados: 90 días
+    - Congelados: 90 días
 5. Si no se detecta la fecha del ticket, asume la fecha actual para tus proyecciones.
-6. Devuelve siempre un JSON estrictamente estructurado según el schema provisto.`;
+6. La moneda por defecto es el Peso Dominicano (DOP / RD$) salvo que el ticket indique expresamente otra divisa.
+7. Devuelve siempre un JSON estrictamente estructurado según el schema provisto.`;
 
 export async function parseTicketWithGemini(options: {
   imageBuffer?: Buffer;
@@ -102,7 +103,7 @@ export async function parseTicketWithGemini(options: {
     return {
       store_name: 'Supermercado Demo',
       purchase_date: today,
-      currency: 'EUR',
+      currency: 'DOP',
       items: [
         {
           raw_name: 'L.ENT.PASC.1L',
@@ -111,17 +112,17 @@ export async function parseTicketWithGemini(options: {
           storage_location: 'Nevera',
           quantity: 2,
           unit: 'litro',
-          estimated_cost: 2.10,
+          estimated_cost: 125.00,
           default_shelf_life_days: 7,
         },
         {
           raw_name: 'PLATANO CANARIAS KG',
-          normalized_name: 'Plátanos de Canarias',
+          normalized_name: 'Plátanos Criollos',
           category: 'Frutas y Verduras',
           storage_location: 'Frutero',
           quantity: 1.2,
           unit: 'kg',
-          estimated_cost: 2.45,
+          estimated_cost: 75.50,
           default_shelf_life_days: 4,
         },
         {
@@ -131,17 +132,17 @@ export async function parseTicketWithGemini(options: {
           storage_location: 'Nevera',
           quantity: 0.6,
           unit: 'kg',
-          estimated_cost: 4.80,
+          estimated_cost: 280.00,
           default_shelf_life_days: 2,
         },
         {
-          raw_name: 'ARROZ REDONDO 1KG',
-          normalized_name: 'Arroz Redondo 1kg',
+          raw_name: 'ARROZ SELECTO 1KG',
+          normalized_name: 'Arroz Selecto 1kg',
           category: 'Despensa y Granos',
           storage_location: 'Despensa Seca',
           quantity: 1,
           unit: 'paquete',
-          estimated_cost: 1.35,
+          estimated_cost: 45.00,
           default_shelf_life_days: 180,
         },
         {
@@ -151,7 +152,7 @@ export async function parseTicketWithGemini(options: {
           storage_location: 'Nevera',
           quantity: 0.4,
           unit: 'kg',
-          estimated_cost: 6.50,
+          estimated_cost: 450.00,
           default_shelf_life_days: 2,
         },
       ],
