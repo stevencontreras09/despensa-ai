@@ -42,11 +42,11 @@ export async function generateWithFallback(params: {
   const ai = getGeminiClient();
   const primaryModel = params.preferredModel || GEMINI_MODEL;
 
-  // Lista de modelos resilientes en orden de prioridad
+  // Lista de modelos resilientes en orden de prioridad (Gemini 3.6 Flash es el reemplazo oficial recomendado por Google)
   const candidateModels = [
     primaryModel,
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
   ].filter((m, idx, arr) => arr.indexOf(m) === idx);
 
   let lastError: any = null;
