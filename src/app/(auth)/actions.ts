@@ -23,6 +23,13 @@ export async function loginAction(
     return { error: parsed.error.issues[0]?.message || 'Datos de inicio de sesión inválidos' };
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
+    return {
+      error: 'Configura las variables de entorno de Supabase en Vercel (Settings -> Environment Variables) para habilitar el inicio de sesión.',
+    };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
@@ -68,6 +75,13 @@ export async function registerAction(
   const parsed = registerSchema.safeParse(rawData);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message || 'Datos de registro inválidos' };
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
+    return {
+      error: 'Configura las variables de entorno de Supabase en Vercel (Settings -> Environment Variables) para registrarte.',
+    };
   }
 
   const supabase = await createClient();

@@ -37,6 +37,19 @@ export default function LoginPage() {
             Inicia Sesión en tu Hogar
           </h2>
 
+          {(!process.env.NEXT_PUBLIC_SUPABASE_URL ||
+            process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')) && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+              <div className="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+                Configuración de Supabase requerida en Vercel
+              </div>
+              <p className="text-[11px] leading-relaxed">
+                Añade <code>NEXT_PUBLIC_SUPABASE_URL</code>, <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code> y <code>GEMINI_API_KEY</code> en Vercel (<strong>Settings &rarr; Environment Variables</strong>) y haz un Redeploy.
+              </p>
+            </div>
+          )}
+
           {state?.error && (
             <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/50 flex items-start gap-3 text-red-700 dark:text-red-300 text-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-500" />
