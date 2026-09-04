@@ -42,9 +42,11 @@ export async function generateWithFallback(params: {
   const ai = getGeminiClient();
   const primaryModel = params.preferredModel || GEMINI_MODEL;
 
-  // Lista de modelos resilientes en orden de prioridad (Gemini 3.6 Flash es el reemplazo oficial recomendado por Google)
+  // Lista de modelos resilientes: gemini-2.5-flash ofrece 1.500 peticiones diarias gratuitas en Google AI Studio
   const candidateModels = [
     primaryModel,
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
     'gemini-3.6-flash',
     'gemini-3.5-flash',
   ].filter((m, idx, arr) => arr.indexOf(m) === idx);
