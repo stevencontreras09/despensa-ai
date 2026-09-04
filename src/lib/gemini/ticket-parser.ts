@@ -51,7 +51,7 @@ export const ticketExtractionJsonSchema = {
           },
           estimated_cost: {
             type: Type.NUMBER,
-            description: 'Precio total del ítem en la moneda correspondiente o null si no está disponible.',
+            description: 'Precio total del ítem en Pesos Dominicanos (RD$). Si se dicta por voz o el precio no viene explícito, DEBE calcularse automáticamente multiplicando cantidad por el precio de referencia de supermercados en RD.',
           },
           default_shelf_life_days: {
             type: Type.INTEGER,
@@ -85,10 +85,19 @@ Tu misión es procesar imágenes de tickets de compra de supermercados o transcr
    - Lácteos y huevos: 7-10 días
    - Panadería fresca: 3-4 días
    - Conservas y despensa seca (arroz, pasta, legumbres): 180 días
-    - Congelados: 90 días
+   - Congelados: 90 días
 5. Si no se detecta la fecha del ticket, asume la fecha actual para tus proyecciones.
 6. La moneda por defecto es el Peso Dominicano (DOP / RD$) salvo que el ticket indique expresamente otra divisa.
-7. Devuelve siempre un JSON estrictamente estructurado según el schema provisto.`;
+7. CÁLCULO AUTOMÁTICO DE PRECIOS EN PESOS DOMINICANOS (RD$):
+   Si el usuario dicta por voz o el precio no viene explícito en el ticket, CALCULA Y ASIGNA SIEMPRE el costo estimado (estimated_cost = cantidad * precio_unitario) basándote en los precios de mercado de supermercados de República Dominicana (La Sirena, Jumbo, Bravo, Nacional, Marca Jumbo):
+   - Carnes/Aves: Pollo ~RD$ 84/lb (RD$ 185/kg), Pechuga ~RD$ 165/lb (RD$ 365/kg), Res molida ~RD$ 210/lb, Bistec ~RD$ 260/lb, Chuleta ~RD$ 165/lb.
+   - Embutidos: Salami Induveca/Don Pedro ~RD$ 140/lb, Salchichas ~RD$ 110/paq, Jamón ~RD$ 160/lb, Queso cheddar/gouda/criollo ~RD$ 200-240/lb.
+   - Lácteos y Huevos: Leche UHT (Rica/Dos Pinos) ~RD$ 78/L, Leche evaporada Carnation ~RD$ 70/lata, Huevos ~RD$ 9/unidad (RD$ 108/docena), Mantequilla ~RD$ 95/ud, Yogur ~RD$ 65/ud.
+   - Víveres y Frutas: Plátanos ~RD$ 20/unidad, Guineos ~RD$ 7/unidad, Yuca ~RD$ 30/lb, Papas ~RD$ 40/lb, Aguacate ~RD$ 55/unidad, Cebolla ~RD$ 55/lb, Tomates ~RD$ 42/lb, Ajo ~RD$ 140/lb, Manzanas ~RD$ 30/unidad.
+   - Despensa: Arroz (Selecto/Campos/Jumbo/Bravo) ~RD$ 50/lb (RD$ 110/kg), Habichuelas ~RD$ 58/lb (RD$ 128/kg), Aceite (Crisol/Joya) ~RD$ 120/L, Pastas Milano ~RD$ 42/paq, Pasta de tomate Victorina ~RD$ 42/lata, Café Santo Domingo ~RD$ 220/paq, Avena ~RD$ 68/paq, Azúcar ~RD$ 38/lb.
+   - Enlatados/Bebidas/Snacks: Atún ~RD$ 80/lata, Sardinas ~RD$ 55/lata, Refresco ~RD$ 45/ud, Jugo Rica ~RD$ 85/L, Galletas Hatuey ~RD$ 55/paq, Pan ~RD$ 10/ud ó RD$ 110/funda.
+   Nunca devuelvas estimated_cost en null o 0 si puedes calcularlo con esta referencia de precios de supermercados de RD.
+8. Devuelve siempre un JSON estrictamente estructurado según el schema provisto.`;
 
 export async function parseTicketWithGemini(options: {
   imageBuffer?: Buffer;

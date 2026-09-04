@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { parseTicketWithGemini } from '@/lib/gemini/ticket-parser';
+import { estimateDominicanPrice } from '@/lib/pricing/canasta-basica';
 
 export async function POST(
   request: NextRequest,
@@ -92,7 +93,7 @@ export async function POST(
       }
     }
 
-    // Enriquecer items con fechas proyectadas y storage_location_id resuelto
+    // Enriquecer items con fechas proyectadas, storage_location_id resuelto y cálculo de precio automático en RD$
     const enrichedItems = extractionResult.items.map((item) => {
       const expDate = new Date(baseDateStr);
       const shelfDays = Number(item.default_shelf_life_days) || 7;
@@ -105,8 +106,21 @@ export async function POST(
         (locations && locations[0]?.id) ||
         '';
 
+      // Si no trajo precio o es nulo/cero (como ocurre habitualmente en el dictado por voz),
+      // se calcula automáticamente con el catálogo y motor de precios de supermercados dominicanos
+      let calculatedCost = item.estimated_cost;
+      if (calculatedCost === null || calculatedCost === undefined || calculatedCost <= 0) {
+        calculatedCost = estimateDominicanPrice(
+          item.normalized_name || item.raw_name,
+          Number(item.quantity) || 1,
+          item.unit || 'unidad',
+          item.category
+        );
+      }
+
       return {
         ...item,
+        estimated_cost: calculatedCost,
         purchase_date: baseDateStr,
         expiration_date,
         storage_location_id: matchedLocationId,

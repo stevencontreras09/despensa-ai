@@ -14,6 +14,8 @@ import {
   X,
 } from 'lucide-react';
 import { VALID_UNITS, StorageLocationRow } from '@/types/inventory';
+import { formatCurrency } from '@/lib/utils/currency';
+import { estimateDominicanPrice } from '@/lib/pricing/canasta-basica';
 
 export interface EditableItem {
   id: string; // temporary client ID
@@ -72,7 +74,15 @@ export function ExpressValidationModal({
         storage_location_name: item.storage_location,
         quantity: Number(item.quantity) || 1,
         unit: item.unit || 'unidad',
-        estimated_cost: item.estimated_cost != null ? Number(item.estimated_cost) : null,
+        estimated_cost:
+          item.estimated_cost != null && Number(item.estimated_cost) > 0
+            ? Number(item.estimated_cost)
+            : estimateDominicanPrice(
+                item.normalized_name || item.name || '',
+                Number(item.quantity) || 1,
+                item.unit || 'unidad',
+                item.category
+              ),
         purchase_date: item.purchase_date && item.purchase_date >= today ? item.purchase_date : today,
         expiration_date: expDate,
         default_shelf_life_days: shelfDays,
@@ -102,11 +112,11 @@ export function ExpressValidationModal({
       id: `manual-${Date.now()}`,
       raw_name: 'Manual',
       name: 'Nuevo Alimento',
-      category: 'Despensa',
+      category: 'Despensa y Granos',
       storage_location_id: storageLocations[0]?.id || '',
       quantity: 1,
       unit: 'unidad',
-      estimated_cost: null,
+      estimated_cost: 50.00,
       purchase_date: today,
       expiration_date: nextWeek.toISOString().split('T')[0],
       default_shelf_life_days: 7,
@@ -114,6 +124,11 @@ export function ExpressValidationModal({
 
     setItems((prev) => [...prev, newItem]);
   };
+
+  const totalEstimatedCost = items.reduce(
+    (acc, it) => acc + (it.estimated_cost != null ? Number(it.estimated_cost) : 0),
+    0
+  );
 
   const handleBatchSave = async () => {
     if (items.length === 0) {
@@ -171,9 +186,16 @@ export function ExpressValidationModal({
               <Sparkles className="w-3.5 h-3.5" />
               Validación Express con IA
             </div>
-            <h2 className="text-lg font-extrabold text-stone-900 dark:text-white">
-              {storeName ? `Compra en ${storeName}` : 'Revisión de Productos'} ({items.length})
-            </h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-lg font-extrabold text-stone-900 dark:text-white">
+                {storeName ? `Compra en ${storeName}` : 'Revisión de Productos'} ({items.length})
+              </h2>
+              {totalEstimatedCost > 0 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 text-[11px] font-extrabold text-emerald-800 dark:text-emerald-300">
+                  Total Estimado: {formatCurrency(totalEstimatedCost)}
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -219,8 +241,8 @@ export function ExpressValidationModal({
                   </button>
                 </div>
 
-                {/* Subrow: Quantity, Unit, Location, Expiration */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                {/* Subrow: Quantity, Unit, Price in RD$, Location, Expiration */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                   {/* Quantity */}
                   <div className="flex items-center gap-1 bg-white dark:bg-stone-900 px-2 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700">
                     <span className="text-stone-400 text-[10px]">Cant:</span>
@@ -246,6 +268,26 @@ export function ExpressValidationModal({
                       </option>
                     ))}
                   </select>
+
+                  {/* Price in RD$ */}
+                  <div className="flex items-center gap-1 bg-white dark:bg-stone-900 px-2 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700" title="Precio estimado automático en RD$">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">RD$:</span>
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      placeholder="0.00"
+                      value={item.estimated_cost !== null && item.estimated_cost !== undefined ? item.estimated_cost : ''}
+                      onChange={(e) =>
+                        updateItem(
+                          item.id,
+                          'estimated_cost',
+                          e.target.value === '' ? null : parseFloat(e.target.value) || 0
+                        )
+                      }
+                      className="w-full bg-transparent text-stone-900 dark:text-white font-bold focus:outline-none"
+                    />
+                  </div>
 
                   {/* Storage Location */}
                   <select
