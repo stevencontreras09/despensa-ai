@@ -31,34 +31,65 @@ export async function createHouseholdAction(
     redirect('/login');
   }
 
-  // Generar código de 12 caracteres único
+  // Usar adminClient si está disponible para evitar restricciones de RLS durante la creación inicial
+  const adminClient = createAdminClient();
+  const clientToUse = adminClient || supabase;
+
+  // Generar código de 12 caracteres único y ID de hogar explícito
   const inviteCode = generateInviteCode(12);
+  const householdId = crypto.randomUUID();
+
+  // Asegurar que el usuario existe en public.users para evitar fallos de foreign key
+  await clientToUse
+    .from('users')
+    .upsert(
+      {
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario',
+      },
+      { onConflict: 'id' }
+    );
 
   // 1. Insertar hogar
-  const { data: household, error: householdError } = await supabase
+  const { error: householdError } = await clientToUse
     .from('households')
     .insert({
+      id: householdId,
       name: parsed.data.name,
       invite_code: inviteCode,
-    })
-    .select('id')
-    .single();
+    });
 
-  if (householdError || !household) {
-    return { error: `Error al crear el hogar: ${householdError?.message || 'Error desconocido'}` };
+  if (householdError) {
+    return { error: `Error al crear el hogar: ${householdError.message}` };
   }
 
   // 2. Asociar al creador como 'admin'
-  const { error: memberError } = await supabase
+  const { error: memberError } = await clientToUse
     .from('household_members')
     .insert({
-      household_id: household.id,
+      household_id: householdId,
       user_id: user.id,
       role: 'admin',
     });
 
   if (memberError) {
     return { error: `Error al asignar rol de administrador: ${memberError.message}` };
+  }
+
+  // 3. Asegurar zonas de almacenamiento por defecto si el trigger no las creó
+  const { count } = await clientToUse
+    .from('storage_locations')
+    .select('id', { count: 'exact', head: true })
+    .eq('household_id', householdId);
+
+  if (!count || count === 0) {
+    await clientToUse.from('storage_locations').insert([
+      { household_id: householdId, name: 'Nevera', is_default: true },
+      { household_id: householdId, name: 'Congelador', is_default: true },
+      { household_id: householdId, name: 'Despensa Seca', is_default: true },
+      { household_id: householdId, name: 'Frutero', is_default: true },
+    ]);
   }
 
   redirect('/dashboard');
@@ -111,8 +142,20 @@ export async function joinHouseholdAction(
     redirect('/dashboard');
   }
 
+  // Asegurar que el usuario existe en public.users
+  await clientToUse
+    .from('users')
+    .upsert(
+      {
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario',
+      },
+      { onConflict: 'id' }
+    );
+
   // 3. Unir al usuario con rol 'member'
-  const { error: joinError } = await supabase
+  const { error: joinError } = await clientToUse
     .from('household_members')
     .insert({
       household_id: household.id,
