@@ -84,6 +84,11 @@ export async function registerAction(
     };
   }
 
+  const appUrl =
+    process.env.APP_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'https://midespensa-wheat.vercel.app';
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -92,6 +97,7 @@ export async function registerAction(
       data: {
         full_name: parsed.data.full_name,
       },
+      emailRedirectTo: `${appUrl}/api/auth/callback`,
     },
   });
 
