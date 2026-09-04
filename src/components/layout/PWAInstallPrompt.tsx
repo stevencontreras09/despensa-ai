@@ -51,8 +51,8 @@ export function PWAInstallPrompt() {
   if (!showPrompt || isDismissed) return null;
 
   return (
-    <aside aria-label="Instalación de PWA" className="fixed top-18 left-4 right-4 max-w-md mx-auto z-50 animate-in fade-in slide-in-from-top duration-300">
-      <div className="p-4 rounded-2xl bg-stone-900 text-white shadow-2xl border border-stone-800 flex items-center justify-between gap-3">
+    <aside aria-label="Instalación de PWA" className="fixed top-16 sm:top-18 left-3 right-3 max-w-md mx-auto z-50 animate-in fade-in slide-in-from-top duration-300">
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-900 text-white shadow-2xl border border-stone-800 flex items-center justify-between gap-2.5 sm:gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
             <Sparkles className="w-5 h-5 text-white" />

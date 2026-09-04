@@ -57,7 +57,7 @@ export default async function AppLayout({
           userRole={memberRecord.role}
         />
         <PWAInstallPrompt />
-        <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 pb-24">
+        <main className="flex-1 max-w-4xl w-full mx-auto px-3.5 sm:px-4 py-4 sm:py-6 pb-28 sm:pb-24">
           {children}
         </main>
         <BottomNav />
