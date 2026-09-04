@@ -87,7 +87,7 @@ export function RecipesContainer({ householdId, inventoryItems }: RecipesContain
             ) : (
               <>
                 <Sparkles className="w-4 h-4 text-emerald-200" />
-                <span>Generar con Gemini 3.7 Flash</span>
+                <span>Generar con Gemini 2.5 Flash</span>
               </>
             )}
           </button>

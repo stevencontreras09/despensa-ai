@@ -39,7 +39,7 @@ export default async function ScanPage() {
           Ingesta Inteligente de Compras
         </h1>
         <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-          Sube la foto del ticket o dicta los productos por voz. Gemini 3.7 Flash procesará todo en segundos.
+          Sube la foto del ticket o dicta los productos por voz. Gemini 2.5 Flash procesará todo en segundos.
         </p>
       </div>
 

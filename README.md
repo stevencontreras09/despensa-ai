@@ -79,7 +79,7 @@ SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
 
 # Gemini AI
 GEMINI_API_KEY=tu-gemini-api-key
-GEMINI_MODEL=gemini-3.7-flash
+GEMINI_MODEL=gemini-2.5-flash
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000

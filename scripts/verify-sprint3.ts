@@ -12,7 +12,7 @@ async function runSprint3Verification() {
   console.log('🧪 Verificando Sprint 3: Dashboard Semáforo, Motor de Recetas y Deducción Idempotente...\n');
 
   // 1. Test de Generación de Recetas de Rescate
-  console.log('1. Test de Generador de Recetas con Gemini 3.7 Flash:');
+  console.log('1. Test de Generador de Recetas con Gemini 2.5 Flash:');
   const sampleItems = [
     {
       id: '123e4567-e89b-12d3-a456-426614174001',

@@ -151,7 +151,7 @@ export function TicketUploader({ householdId, onExtractionComplete }: TicketUplo
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Analizando con Gemini 3.7 Flash...</span>
+                  <span>Analizando con Gemini 2.5 Flash...</span>
                 </>
               ) : (
                 <>

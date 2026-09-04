@@ -233,7 +233,7 @@ export function VoiceDictation({ householdId, onExtractionComplete }: VoiceDicta
         {isLoading ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Normalizando con Gemini 3.7 Flash...</span>
+            <span>Normalizando con Gemini 2.5 Flash...</span>
           </>
         ) : (
           <>

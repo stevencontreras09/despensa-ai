@@ -46,7 +46,7 @@ export default async function RecipesPage() {
           Motor de Recetas de Rescate
         </h1>
         <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-          Cocina anti-desperdicio con Gemini 3.7 Flash. Recetas optimizadas para vaciar los alimentos en riesgo.
+          Cocina anti-desperdicio con Gemini 2.5 Flash. Recetas optimizadas para vaciar los alimentos en riesgo.
         </p>
       </div>
 

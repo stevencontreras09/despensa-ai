@@ -15,7 +15,7 @@ export function getGeminiClient(): GoogleGenAI {
   return geminiClientInstance;
 }
 
-export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.7-flash';
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 function isOverloadedOrRateLimited(err: any): boolean {
   const msg = (err?.message || '').toLowerCase();
