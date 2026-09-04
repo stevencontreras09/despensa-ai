@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx scripts/verify-sprint1.ts"
+    "test": "tsx scripts/run-all-tests.ts"
   },
   "dependencies": {
     "@google/genai": "^2.21.0",
