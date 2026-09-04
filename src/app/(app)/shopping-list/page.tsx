@@ -21,20 +21,23 @@ export default async function ShoppingListPage() {
     redirect('/setup-household');
   }
 
-  // Obtener items de la lista de compras
-  const { data: items } = await supabase
-    .from('shopping_list_items')
-    .select('*')
-    .eq('household_id', memberRecord.household_id)
-    .order('is_purchased', { ascending: true })
-    .order('created_at', { ascending: false });
+  // Obtener items de la lista y zonas de almacenamiento en paralelo
+  const [itemsRes, storageRes] = await Promise.all([
+    supabase
+      .from('shopping_list_items')
+      .select('*')
+      .eq('household_id', memberRecord.household_id)
+      .order('is_purchased', { ascending: true })
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('storage_locations')
+      .select('*')
+      .eq('household_id', memberRecord.household_id)
+      .order('name'),
+  ]);
 
-  // Obtener zonas de almacenamiento para el reabastecimiento
-  const { data: storageLocations } = await supabase
-    .from('storage_locations')
-    .select('*')
-    .eq('household_id', memberRecord.household_id)
-    .order('name');
+  const items = itemsRes.data || [];
+  const storageLocations = storageRes.data || [];
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

@@ -27,34 +27,33 @@ export default async function DashboardPage() {
     .limit(1)
     .maybeSingle();
 
-  // Obtener datos del hogar
-  const { data: household } = memberRecord?.household_id
-    ? await supabase
-        .from('households')
-        .select('id, name, invite_code')
-        .eq('id', memberRecord.household_id)
-        .maybeSingle()
-    : { data: null };
+  const householdId = memberRecord?.household_id;
 
-  // Obtener zonas de almacenamiento (precargadas por trigger en Supabase)
-  const { data: storageLocations } = household?.id
-    ? await supabase
-        .from('storage_locations')
-        .select('id, name, is_default')
-        .eq('household_id', household.id)
-        .order('name')
-    : { data: [] };
+  // Obtener datos del hogar, zonas e inventario en paralelo
+  const [householdRes, storageRes, inventoryRes] = householdId
+    ? await Promise.all([
+        supabase
+          .from('households')
+          .select('id, name, invite_code')
+          .eq('id', householdId)
+          .maybeSingle(),
+        supabase
+          .from('storage_locations')
+          .select('id, name, is_default')
+          .eq('household_id', householdId)
+          .order('name'),
+        supabase
+          .from('inventory_items')
+          .select('id, expiration_date, status')
+          .eq('household_id', householdId)
+          .eq('status', 'active'),
+      ])
+    : [{ data: null }, { data: [] }, { data: [] }];
 
-  // Obtener conteo rápido de items de inventario activos
-  const { data: inventoryItems } = household?.id
-    ? await supabase
-        .from('inventory_items')
-        .select('id, expiration_date, status')
-        .eq('household_id', household.id)
-        .eq('status', 'active')
-    : { data: [] };
-
-  const totalActiveItems = inventoryItems?.length || 0;
+  const household = householdRes.data;
+  const storageLocations = storageRes.data || [];
+  const inventoryItems = inventoryRes.data || [];
+  const totalActiveItems = inventoryItems.length;
 
   return (
     <div className="space-y-6">

@@ -21,20 +21,23 @@ export default async function InventoryPage() {
     redirect('/setup-household');
   }
 
-  // Obtener ubicaciones
-  const { data: storageLocations } = await supabase
-    .from('storage_locations')
-    .select('*')
-    .eq('household_id', memberRecord.household_id)
-    .order('name');
+  // Obtener ubicaciones e items en paralelo
+  const [locationsRes, itemsRes] = await Promise.all([
+    supabase
+      .from('storage_locations')
+      .select('*')
+      .eq('household_id', memberRecord.household_id)
+      .order('name'),
+    supabase
+      .from('inventory_items')
+      .select('id, household_id, name, quantity, unit, expiration_date, estimated_cost, storage_location_id, status')
+      .eq('household_id', memberRecord.household_id)
+      .eq('status', 'active')
+      .order('expiration_date', { ascending: true }),
+  ]);
 
-  // Obtener items activos de inventario
-  const { data: rawItems } = await supabase
-    .from('inventory_items')
-    .select('id, household_id, name, quantity, unit, expiration_date, estimated_cost, storage_location_id, status')
-    .eq('household_id', memberRecord.household_id)
-    .eq('status', 'active')
-    .order('expiration_date', { ascending: true });
+  const storageLocations = locationsRes.data || [];
+  const rawItems = itemsRes.data || [];
 
   const locationMap = new Map<string, any>();
   (storageLocations || []).forEach((loc) => {
