@@ -171,20 +171,24 @@ export async function parseTicketWithGemini(options: {
     });
   }
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   if (options.text) {
     contents.push({
-      text: `Por favor analiza esta lista/compra dictada o transcrita:\n"${options.text}"`,
+      text: `Fecha actual de hoy: ${todayStr}.\nPor favor analiza esta lista/compra dictada o transcrita:\n"${options.text}"\nRecuerda que la fecha de compra debe ser hoy (${todayStr}) y las fechas de caducidad deben ser futuras a partir de hoy.`,
     });
   } else {
     contents.push({
-      text: 'Por favor analiza este ticket de compra y extrae los alimentos comestibles según las instrucciones.',
+      text: `Fecha actual de referencia: ${todayStr}.\nPor favor analiza este ticket de compra y extrae los alimentos comestibles según las instrucciones. Si el ticket no indica año o fecha explícita, usa como fecha de compra ${todayStr}.`,
     });
   }
+
+  const dynamicInstruction = `${SYSTEM_INSTRUCTION}\n\nIMPORTANTE: La fecha actual del sistema es ${todayStr}. Usa siempre esta fecha (${todayStr}) como año y fecha base de referencia. Nunca devuelvas fechas de años anteriores como 2023 o 2024.`;
 
   const response = await generateWithFallback({
     contents,
     config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
+      systemInstruction: dynamicInstruction,
       responseMimeType: 'application/json',
       responseJsonSchema: ticketExtractionJsonSchema,
       temperature: 0.2,

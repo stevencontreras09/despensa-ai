@@ -76,13 +76,27 @@ export async function POST(
       });
     }
 
-    const baseDateStr = extractionResult.purchase_date || new Date().toISOString().split('T')[0];
-    const baseDate = new Date(baseDateStr);
+    // Determinar la fecha base de compra asegurando que no sea una fecha alucinada del pasado
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const currentYear = today.getFullYear();
+
+    let baseDateStr = todayStr;
+
+    if (extractionResult.purchase_date) {
+      const parsedDate = new Date(extractionResult.purchase_date);
+      const diffDays = Math.abs((today.getTime() - parsedDate.getTime()) / (1000 * 60 * 60 * 24));
+      // Usar fecha del ticket solo si es válida, del año en curso y con menos de 60 días de antigüedad
+      if (!isNaN(parsedDate.getTime()) && parsedDate.getFullYear() >= currentYear && diffDays <= 60) {
+        baseDateStr = extractionResult.purchase_date;
+      }
+    }
 
     // Enriquecer items con fechas proyectadas y storage_location_id resuelto
     const enrichedItems = extractionResult.items.map((item) => {
-      const expDate = new Date(baseDate);
-      expDate.setDate(expDate.getDate() + (item.default_shelf_life_days || 7));
+      const expDate = new Date(baseDateStr);
+      const shelfDays = Number(item.default_shelf_life_days) || 7;
+      expDate.setDate(expDate.getDate() + shelfDays);
       const expiration_date = expDate.toISOString().split('T')[0];
 
       const matchedLocationId =

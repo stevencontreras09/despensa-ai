@@ -51,20 +51,33 @@ export function ExpressValidationModal({
 
   // Mapeo inicial
   const [items, setItems] = useState<EditableItem[]>(() => {
-    return initialItems.map((item, idx) => ({
-      id: `item-${idx}-${Date.now()}`,
-      raw_name: item.raw_name || '',
-      name: item.normalized_name || item.name || '',
-      category: item.category || 'Varios',
-      storage_location_id: item.storage_location_id || (storageLocations[0]?.id ?? ''),
-      storage_location_name: item.storage_location,
-      quantity: Number(item.quantity) || 1,
-      unit: item.unit || 'unidad',
-      estimated_cost: item.estimated_cost != null ? Number(item.estimated_cost) : null,
-      purchase_date: item.purchase_date || purchaseDate || new Date().toISOString().split('T')[0],
-      expiration_date: item.expiration_date || new Date().toISOString().split('T')[0],
-      default_shelf_life_days: item.default_shelf_life_days || 7,
-    }));
+    const today = new Date().toISOString().split('T')[0];
+    return initialItems.map((item, idx) => {
+      let expDate = item.expiration_date;
+      const shelfDays = Number(item.default_shelf_life_days) || 7;
+
+      // Si la fecha de caducidad está vacía o es anterior a hoy, recalibrar a partir de hoy
+      if (!expDate || expDate < today) {
+        const d = new Date();
+        d.setDate(d.getDate() + shelfDays);
+        expDate = d.toISOString().split('T')[0];
+      }
+
+      return {
+        id: `item-${idx}-${Date.now()}`,
+        raw_name: item.raw_name || '',
+        name: item.normalized_name || item.name || '',
+        category: item.category || 'Varios',
+        storage_location_id: item.storage_location_id || (storageLocations[0]?.id ?? ''),
+        storage_location_name: item.storage_location,
+        quantity: Number(item.quantity) || 1,
+        unit: item.unit || 'unidad',
+        estimated_cost: item.estimated_cost != null ? Number(item.estimated_cost) : null,
+        purchase_date: item.purchase_date && item.purchase_date >= today ? item.purchase_date : today,
+        expiration_date: expDate,
+        default_shelf_life_days: shelfDays,
+      };
+    });
   });
 
   const [isSaving, setIsSaving] = useState(false);
